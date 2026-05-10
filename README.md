@@ -1,6 +1,6 @@
-STM32WB55 Blink Sample
+STM32WB55 USB Sample
 
-Simple Blink program for WeAct Studio board based on STM32WB55CGU6
+Simple USB program for WeAct Studio board based on STM32WB55CGU6
 LED is on pin PE4
 
 ## How to build and flash (for Ubuntu)
@@ -11,7 +11,7 @@ LED is on pin PE4
     ```
 1. Clone the project:
     ```bash
-    git clone https://github.com/Kotsiubynskyi/stm32wb55_usb.git
+    git clone --recursive https://github.com/Kotsiubynskyi/stm32wb55_usb.git
     ```
 1. Generate build files:
     ```bash

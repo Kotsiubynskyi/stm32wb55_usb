@@ -28,8 +28,8 @@
 #include "tusb.h"
 #include <string.h>
 
-#define DISK_SECTOR_COUNT 128   /* total number of 512-byte sectors   */
-#define DISK_SECTOR_SIZE  512   /* bytes per sector (standard for FAT) */
+#define DISK_SECTOR_COUNT 128 /* total number of 512-byte sectors   */
+#define DISK_SECTOR_SIZE 512  /* bytes per sector (standard for FAT) */
 
 /* The entire disk lives in BSS; zero-initialised at startup. */
 static uint8_t disk[DISK_SECTOR_COUNT][DISK_SECTOR_SIZE];
@@ -51,14 +51,17 @@ static void disk_init(void) {
 
   /* Bytes 0-2: x86 short-jump + NOP.  Required by Windows/Linux FAT
    * parsers even though we never execute boot code.                   */
-  boot[0] = 0xEB; boot[1] = 0x3C; boot[2] = 0x90;
+  boot[0] = 0xEB;
+  boot[1] = 0x3C;
+  boot[2] = 0x90;
 
   /* Bytes 3-10: OEM name — 8 ASCII bytes, space-padded.              */
   memcpy(&boot[3], "MSDOS5.0", 8);
 
   /* Bytes 11-12: Bytes Per Sector — must be 512, 1024, 2048 or 4096.
    * Stored little-endian; 0x0200 = 512.                              */
-  boot[11] = 0x00; boot[12] = 0x02;
+  boot[11] = 0x00;
+  boot[12] = 0x02;
 
   /* Byte 13: Sectors Per Cluster.  1 means each cluster is one sector.
    * Larger values reduce FAT overhead but waste space on small files. */
@@ -66,18 +69,21 @@ static void disk_init(void) {
 
   /* Bytes 14-15: Reserved Sector Count — number of sectors before
    * FAT1, including the boot sector itself.  Always 1 for FAT12.     */
-  boot[14] = 0x01; boot[15] = 0x00;
+  boot[14] = 0x01;
+  boot[15] = 0x00;
 
   /* Byte 16: Number of FATs.  The spec mandates 2 for redundancy.    */
   boot[16] = 0x02;
 
   /* Bytes 17-18: Root Entry Count — maximum directory entries in the
    * root directory.  16 entries × 32 bytes = 512 bytes = 1 sector.   */
-  boot[17] = 0x10; boot[18] = 0x00;
+  boot[17] = 0x10;
+  boot[18] = 0x00;
 
   /* Bytes 19-20: Total Sectors (16-bit).  Used when disk < 32 MB.
    * 128 sectors = 0x0080, stored little-endian.                      */
-  boot[19] = DISK_SECTOR_COUNT; boot[20] = 0x00;
+  boot[19] = DISK_SECTOR_COUNT;
+  boot[20] = 0x00;
 
   /* Byte 21: Media Type.
    *   0xF8 = fixed (non-removable) disk.
@@ -88,14 +94,17 @@ static void disk_init(void) {
   /* Bytes 22-23: Sectors Per FAT.  1 sector holds 512 bytes; each
    * FAT12 entry is 1.5 bytes, so 1 sector covers 512/1.5 ≈ 341
    * entries — more than enough for 128 clusters.                     */
-  boot[22] = 0x01; boot[23] = 0x00;
+  boot[22] = 0x01;
+  boot[23] = 0x00;
 
   /* Bytes 24-25: Sectors Per Track.  Geometry hint for legacy BIOS.
    * Irrelevant for USB mass storage; set to 1.                       */
-  boot[24] = 0x01; boot[25] = 0x00;
+  boot[24] = 0x01;
+  boot[25] = 0x00;
 
   /* Bytes 26-27: Number of Heads.  Same — irrelevant, set to 1.      */
-  boot[26] = 0x01; boot[27] = 0x00;
+  boot[26] = 0x01;
+  boot[27] = 0x00;
 
   /* Bytes 28-31: Hidden Sectors before this partition — 0.           */
   /* Bytes 32-35: Total Sectors (32-bit) — 0 when 16-bit field used.  */
@@ -113,7 +122,10 @@ static void disk_init(void) {
 
   /* Bytes 39-42: Volume Serial Number — arbitrary 32-bit value.
    * Windows uses this to track which disk is mounted.                */
-  boot[39] = 0xDE; boot[40] = 0xAD; boot[41] = 0xBE; boot[42] = 0xEF;
+  boot[39] = 0xDE;
+  boot[40] = 0xAD;
+  boot[41] = 0xBE;
+  boot[42] = 0xEF;
 
   /* Bytes 43-53: Volume Label — 11 bytes, space-padded.  This string
    * appears as the drive name in file managers.                      */
@@ -124,8 +136,8 @@ static void disk_init(void) {
   memcpy(&boot[54], "FAT12   ", 8);
 
   /* Bytes 510-511: Boot sector signature — required by all FAT specs. */
-  boot[510] = 0x55; boot[511] = 0xAA;
-
+  boot[510] = 0x55;
+  boot[511] = 0xAA;
 
   /* ---- Sector 1: FAT1 --------------------------------------------- */
   /*
@@ -144,12 +156,12 @@ static void disk_init(void) {
    * All remaining bytes are 0x00 = free clusters.
    */
   uint8_t *fat = disk[1];
-  fat[0] = 0xF8; fat[1] = 0xFF; fat[2] = 0xFF;
-
+  fat[0] = 0xF8;
+  fat[1] = 0xFF;
+  fat[2] = 0xFF;
 
   /* ---- Sector 2: FAT2 (mandatory copy of FAT1) -------------------- */
   memcpy(disk[2], disk[1], DISK_SECTOR_SIZE);
-
 
   /* ---- Sector 3: Root directory ------------------------------------ */
   /*
@@ -163,8 +175,8 @@ static void disk_init(void) {
    *   12-31  Timestamps, cluster, size — all 0 for a label entry
    */
   uint8_t *root = disk[3];
-  memcpy(&root[0], "RAMDISK    ", 11);  /* matches boot[43] */
-  root[11] = 0x08;                       /* ATTR_VOLUME_ID   */
+  memcpy(&root[0], "RAMDISK    ", 11); /* matches boot[43] */
+  root[11] = 0x08;                     /* ATTR_VOLUME_ID   */
 }
 
 /* ------------------------------------------------------------------ */
@@ -194,8 +206,8 @@ static bool ensure_ready(void) {
 void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8],
                         uint8_t product_id[16], uint8_t product_rev[4]) {
   (void)lun;
-  memcpy(vendor_id,   "STM32   ", 8);
-  memcpy(product_id,  "RAM Disk        ", 16);
+  memcpy(vendor_id, "STM32   ", 8);
+  memcpy(product_id, "RAM Disk        ", 16);
   memcpy(product_rev, "1.0 ", 4);
 }
 
@@ -218,7 +230,19 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t *block_count,
   (void)lun;
   ensure_ready();
   *block_count = DISK_SECTOR_COUNT;
-  *block_size  = DISK_SECTOR_SIZE;
+  *block_size = DISK_SECTOR_SIZE;
+}
+
+void tud_cdc_rx_cb(uint8_t itf) {
+  (void)itf;
+
+  char buf[64];
+  uint32_t count = tud_cdc_read(buf, sizeof(buf));
+
+  tud_cdc_write_str("Got it!");
+  tud_cdc_write_flush();
+  // TODO control LED on keyboard of host stack
+  (void)count;
 }
 
 /*
@@ -229,7 +253,8 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t *block_count,
 int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset,
                           void *buffer, uint32_t bufsize) {
   (void)lun;
-  if (lba >= DISK_SECTOR_COUNT) return -1;
+  if (lba >= DISK_SECTOR_COUNT)
+    return -1;
   memcpy(buffer, disk[lba] + offset, bufsize);
   return (int32_t)bufsize;
 }
@@ -242,7 +267,8 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset,
 int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset,
                            uint8_t *buffer, uint32_t bufsize) {
   (void)lun;
-  if (lba >= DISK_SECTOR_COUNT) return -1;
+  if (lba >= DISK_SECTOR_COUNT)
+    return -1;
   memcpy(disk[lba] + offset, buffer, bufsize);
   return (int32_t)bufsize;
 }
@@ -253,8 +279,11 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset,
  * with CHECK CONDITION / ILLEGAL REQUEST, which is acceptable for
  * commands we don't implement.
  */
-int32_t tud_msc_scsi_cb(uint8_t lun, uint8_t const scsi_cmd[16],
-                        void *buffer, uint16_t bufsize) {
-  (void)lun; (void)scsi_cmd; (void)buffer; (void)bufsize;
+int32_t tud_msc_scsi_cb(uint8_t lun, uint8_t const scsi_cmd[16], void *buffer,
+                        uint16_t bufsize) {
+  (void)lun;
+  (void)scsi_cmd;
+  (void)buffer;
+  (void)bufsize;
   return -1;
 }
