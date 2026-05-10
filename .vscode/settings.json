@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "stm32wbxx_hal.h": "c",
+        "stm32wbxx_ll_system.h": "c",
+        "main.h": "c"
+    }
+}

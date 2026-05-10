@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug with ST-Link",
+            "cwd": "${workspaceFolder}",
+            "type": "cortex-debug",
+            "executable": "build/stm32wb55_blink",
+            "request": "launch",
+            "servertype": "stlink",
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 4
+            },
+            "showDevDebugOutput": "none",
+            "preLaunchTask": "Build and Upload",
+            "svdFile": "${cwd}/svd/STM32WB55_CM4.svd"
+        }
+    ]
+}
