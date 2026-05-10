@@ -5,7 +5,7 @@
             "name": "Debug with ST-Link",
             "cwd": "${workspaceFolder}",
             "type": "cortex-debug",
-            "executable": "build/stm32wb55_blink",
+            "executable": "build/stm32wb55_usb",
             "request": "launch",
             "servertype": "stlink",
             "liveWatch": {

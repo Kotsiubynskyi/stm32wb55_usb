@@ -18,7 +18,7 @@
     {
       "label": "Upload",
       "type": "shell",
-      "command": "st-flash --reset write build/stm32wb55_blink.bin 0x08000000",
+      "command": "st-flash --reset write build/stm32wb55_usb.bin 0x08000000",
       "group": "none",
       "dependsOn": "Build",
       "detail": "Flashes the firmware using the st-flash tool, then resets the device."

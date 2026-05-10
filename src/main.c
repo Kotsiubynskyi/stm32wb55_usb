@@ -30,14 +30,18 @@ int main(void) {
   tusb_init(0, &dev_init);
 
   uint32_t led_tick = 0;
+  uint32_t cdc_tick = 0;
 
   while (1) {
     tud_task();
 
     uint32_t now = HAL_GetTick();
-    if (now - led_tick >= 100) {
+
+    if (now - led_tick >= 1000) {
       led_tick = now;
       HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_4);
+      tud_cdc_write_str("Hello from STM32WB55\r\n");
+      tud_cdc_write_flush();
     }
   }
 }
@@ -45,6 +49,7 @@ int main(void) {
 void SystemClock_Config(void) {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_CRSInitTypeDef RCC_CRSInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
    */
@@ -86,6 +91,22 @@ void SystemClock_Config(void) {
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK) {
     Error_Handler();
   }
+
+  /** Enable the SYSCFG APB clock
+   */
+  __HAL_RCC_CRS_CLK_ENABLE();
+
+  /** Configures CRS
+   */
+  RCC_CRSInitStruct.Prescaler = RCC_CRS_SYNC_DIV1;
+  RCC_CRSInitStruct.Source = RCC_CRS_SYNC_SOURCE_USB;
+  RCC_CRSInitStruct.Polarity = RCC_CRS_SYNC_POLARITY_RISING;
+  RCC_CRSInitStruct.ReloadValue =
+      __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000, 1000);
+  RCC_CRSInitStruct.ErrorLimitValue = 34;
+  RCC_CRSInitStruct.HSI48CalibrationValue = 32;
+
+  HAL_RCCEx_CRSConfig(&RCC_CRSInitStruct);
 }
 
 void PeriphCommonClock_Config(void) {
