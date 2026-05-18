@@ -13,6 +13,7 @@ add_executable(${PROJECT_NAME}
   src/main.c
   src/usb_descriptors.c
   src/msc_disk.c
+  src/hid_media.c
   src/syscall.c
   src/sysmem.c
   src/system_stm32wbxx.c
@@ -34,6 +35,7 @@ add_executable(${PROJECT_NAME}
   tinyusb/src/device/usbd.c
   tinyusb/src/class/cdc/cdc_device.c
   tinyusb/src/class/msc/msc_device.c
+  tinyusb/src/class/hid/hid_device.c
   tinyusb/src/portable/st/stm32_fsdev/dcd_stm32_fsdev.c
   tinyusb/src/portable/st/stm32_fsdev/fsdev_common.c
 )
@@ -54,8 +56,10 @@ target_compile_options(${PROJECT_NAME} PRIVATE
   -mthumb
   -mfloat-abi=hard
   -mfpu=fpv4-sp-d16
-  -g
-  -O1
+  -Os
+  # -g
+  # -O1
+  -flto
   -ffunction-sections # Place functions in separate sections
   -fdata-sections # Place data in separate sections
   -fno-exceptions # Disable exceptions for bare-metal code
@@ -67,6 +71,7 @@ target_link_options(${PROJECT_NAME} PRIVATE
   -mfpu=fpv4-sp-d16
   -mfloat-abi=hard
   -mthumb
+  -flto
   -Wl,--start-group
   -Wl,--end-group
   -static

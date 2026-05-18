@@ -41,7 +41,7 @@ extern "C" {
 
 // RHPort max operational speed can defined by board.mk
 #ifndef BOARD_TUD_MAX_SPEED
-#define BOARD_TUD_MAX_SPEED OPT_MODE_DEFAULT_SPEED
+#define BOARD_TUD_MAX_SPEED OPT_MODE_FULL_SPEED
 #endif
 
 //--------------------------------------------------------------------
@@ -93,7 +93,7 @@ extern "C" {
 //------------- CLASS -------------//
 #define CFG_TUD_CDC 1
 #define CFG_TUD_MSC 1
-#define CFG_TUD_HID 0
+#define CFG_TUD_HID 1
 #define CFG_TUD_MIDI 0
 #define CFG_TUD_VENDOR 0
 
@@ -111,6 +111,9 @@ extern "C" {
 
 // MSC Buffer size of Device Mass storage
 #define CFG_TUD_MSC_EP_BUFSIZE 512
+
+// HID buffer size (consumer control report = 2 bytes, keep some margin)
+#define CFG_TUD_HID_EP_BUFSIZE 16
 
 #ifdef __cplusplus
 }

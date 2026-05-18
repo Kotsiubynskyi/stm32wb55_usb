@@ -129,7 +129,7 @@ static void disk_init(void) {
 
   /* Bytes 43-53: Volume Label — 11 bytes, space-padded.  This string
    * appears as the drive name in file managers.                      */
-  memcpy(&boot[43], "RAMDISK    ", 11);
+  memcpy(&boot[43], "DONATE-RSRZ", 11);
 
   /* Bytes 54-61: File System Type — 8 bytes, space-padded.  Purely
    * informational; the OS determines FAT type from the BPB math.     */
@@ -159,6 +159,9 @@ static void disk_init(void) {
   fat[0] = 0xF8;
   fat[1] = 0xFF;
   fat[2] = 0xFF;
+  /* Cluster 2 = end-of-chain (README.TXT occupies exactly one cluster) */
+  fat[3] = 0xFF;
+  fat[4] = 0x0F;
 
   /* ---- Sector 2: FAT2 (mandatory copy of FAT1) -------------------- */
   memcpy(disk[2], disk[1], DISK_SECTOR_SIZE);
@@ -175,8 +178,29 @@ static void disk_init(void) {
    *   12-31  Timestamps, cluster, size — all 0 for a label entry
    */
   uint8_t *root = disk[3];
-  memcpy(&root[0], "RAMDISK    ", 11); /* matches boot[43] */
-  root[11] = 0x08;                     /* ATTR_VOLUME_ID   */
+  memcpy(&root[0], &boot[43], 11); /* matches boot[43] */
+  root[11] = 0x08;                 /* ATTR_VOLUME_ID   */
+
+  /* ---- File: README.TXT ------------------------------------------- */
+  static const char readme[] =
+      "\xEF\xBB\xBF" /* UTF-8 BOM — helps Windows Notepad */
+      "Інструкція\r\n"
+      "\r\n"
+      "1. Щоб продовжити чи поставити трек на паузу натисни кнопку на "
+      "борді\r\n2. Донать на русоріз";
+  uint32_t file_size = sizeof(readme) - 1; /* exclude NUL terminator */
+
+  uint8_t *entry = &root[32]; /* second dir entry (after volume label) */
+  memcpy(&entry[0], "README  TXT", 11); /* 8.3 name, space-padded, no dot */
+  entry[11] = 0x20; /* ATTR_ARCHIVE                          */
+  entry[26] = 0x02; /* first cluster low                     */
+  entry[27] = 0x00; /* first cluster high                    */
+  entry[28] = (uint8_t)(file_size);
+  entry[29] = (uint8_t)(file_size >> 8);
+  entry[30] = (uint8_t)(file_size >> 16);
+  entry[31] = (uint8_t)(file_size >> 24);
+
+  memcpy(disk[4], readme, file_size); /* cluster 2 → sector 4 */
 }
 
 /* ------------------------------------------------------------------ */
@@ -231,18 +255,6 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t *block_count,
   ensure_ready();
   *block_count = DISK_SECTOR_COUNT;
   *block_size = DISK_SECTOR_SIZE;
-}
-
-void tud_cdc_rx_cb(uint8_t itf) {
-  (void)itf;
-
-  char buf[64];
-  uint32_t count = tud_cdc_read(buf, sizeof(buf));
-
-  tud_cdc_write_str("Got it!");
-  tud_cdc_write_flush();
-  // TODO control LED on keyboard of host stack
-  (void)count;
 }
 
 /*
