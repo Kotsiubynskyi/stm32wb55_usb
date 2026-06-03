@@ -83,6 +83,8 @@ void process_media_playback(void) {
   if (hid_pressed && (now - hid_press_tick >= 20)) {
     hid_media_release();
     HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_4);
+  }
+  if (hid_pressed && (now - hid_press_tick >= 200)) {
     hid_trigger = 0;
     hid_pressed = 0;
   }
