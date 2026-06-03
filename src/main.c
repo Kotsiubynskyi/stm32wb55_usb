@@ -193,9 +193,8 @@ void MX_USB_PCD_Init(void) {
 
   /* USER CODE END USB_Init 2 */
 }
-
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-  if (GPIO_Pin == GPIO_PIN_3) {
+  if (GPIO_Pin == GPIO_PIN_3 && !hid_pressed && !hid_trigger) {
     hid_trigger = 1;
   }
 }
