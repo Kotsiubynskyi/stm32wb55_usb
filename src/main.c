@@ -75,15 +75,16 @@ void process_led_on_off(void) {
 
 void process_media_playback(void) {
   if (!hid_pressed && hid_trigger) {
-    hid_trigger = 0;
     hid_pressed = 1;
     hid_press_tick = now;
     hid_media_send(HID_USAGE_CONSUMER_PLAY_PAUSE);
   }
 
   if (hid_pressed && (now - hid_press_tick >= 20)) {
-    hid_pressed = 0;
     hid_media_release();
+    HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_4);
+    hid_trigger = 0;
+    hid_pressed = 0;
   }
 }
 
@@ -195,7 +196,6 @@ void MX_USB_PCD_Init(void) {
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == GPIO_PIN_3) {
-    HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_4);
     hid_trigger = 1;
   }
 }
