@@ -1,8 +1,12 @@
 STM32WB55 USB Example
 
-Simple USB program for WeAct Studio board based on STM32WB55CGU6
+Simple USB program for WeAct Studio board based on STM32WB55CGU6 with next implemented USB features (classes):
 
-LED is on pin PE4 and user button is on PH3
+* CDC (COM port)
+* HID (music playback control button)
+* MSC (small flash drive with file)
+
+LED is on pin **PE4** and user button is on **PH3**
 
 ## How to build and flash (for Ubuntu)
 
